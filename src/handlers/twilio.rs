@@ -56,11 +56,15 @@ async fn handle_socket(socket: WebSocket, state: Arc<State>) {
 /// the twilio sender ws handle
 async fn handle_from_twilio_tx(
     twilio_rx: crossbeam_channel::Receiver<Message>,
-    mut twilio_sender: SplitSink<WebSocket, axum::extract::ws::Message>,
+    _twilio_sender: SplitSink<WebSocket, axum::extract::ws::Message>,
 ) {
     while let Ok(message) = twilio_rx.recv() {
-        // TODO: get TTS audio from this text
-        let _ = twilio_sender.send(message.into()).await;
+        // TODO: get TTS audio from this text and send it to the twilio sender
+        //let _ = twilio_sender.send(message.into()).await;
+        println!(
+            "Got a text message to convert into TTS to send to Twilio: {:?}",
+            message
+        );
     }
 }
 
@@ -93,7 +97,6 @@ async fn handle_to_game_rx(
                 // parse the deepgram result to see if we have a game connected with the spoken game code
                 let deepgram_response: Result<deepgram_response::StreamingResponse, _> =
                     serde_json::from_str(&msg);
-
                 match deepgram_response {
                     Ok(deepgram_response) => {
                         for alternative in deepgram_response.channel.alternatives {

@@ -63,6 +63,7 @@ async fn handle_socket(socket: WebSocket, state: Arc<State>) {
                     game_tx,
                     twilio_tx: None,
                 };
+
                 games.insert(game_code.clone(), game_twilio_txs);
             }
 
@@ -72,13 +73,6 @@ async fn handle_socket(socket: WebSocket, state: Arc<State>) {
                 Arc::clone(&state),
                 game_reader,
             ));
-
-            // when this ws handler is finished, make sure we clean up this games entry in state.games
-            // and add the game code back to the state.game_codes set
-            let mut games = state.games.lock().await;
-            games.remove(&game_code);
-            let mut game_codes = state.game_codes.lock().await;
-            game_codes.insert(game_code);
         }
         None => {
             return;
@@ -127,4 +121,11 @@ async fn handle_from_game_ws(
             }
         }
     }
+
+    // when this ws handler is finished, make sure we clean up this games entry in state.games
+    // and add the game code back to the state.game_codes set
+    let mut games = state.games.lock().await;
+    games.remove(&game_code);
+    let mut game_codes = state.game_codes.lock().await;
+    game_codes.insert(game_code);
 }
