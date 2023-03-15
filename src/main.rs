@@ -1,7 +1,8 @@
 use axum::{routing::get, Extension, Router};
 use axum_server::tls_rustls::RustlsConfig;
 use futures::lock::Mutex;
-use std::{collections::HashMap, sync::Arc};
+use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
 
 mod audio;
 mod deepgram_response;
@@ -39,11 +40,18 @@ async fn main() {
         }
     };
 
+    let mut game_codes = HashSet::new();
+
+    for number in 0..100 {
+        game_codes.insert(number.to_string());
+    }
+
     let state = Arc::new(state::State {
         deepgram_url,
         api_key,
         twilio_phone_number,
         games: Mutex::new(HashMap::new()),
+        game_codes: Mutex::new(game_codes),
     });
 
     let app = Router::new()
