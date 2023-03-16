@@ -53,18 +53,18 @@ async fn handle_to_game(
     let mut game_code: Option<String> = None;
 
     while let Some(Ok(msg)) = deepgram_receiver.next().await {
-        let mut games = state.games.lock().await;
-        if let Some(game_code) = game_code.as_ref() {
-            if let Some(game_ws) = games.get_mut(game_code) {
-                // send the message to the game
-                let _ = game_ws.send(Message::from(msg.clone()).into()).await;
+        if let tungstenite::Message::Text(msg) = msg.clone() {
+            let mut games = state.games.lock().await;
+            if let Some(game_code) = game_code.as_ref() {
+                if let Some(game_ws) = games.get_mut(game_code) {
+                    // send the message to the game
+                    let _ = game_ws.send(Message::Text(msg.clone()).into()).await;
+                } else {
+                    // this game existed, and no longer exists, so close the connection(s)?
+                    // or just make game "None" again
+                }
             } else {
-                // this game existed, and no longer exists, so close the connection(s)?
-                // or just make game "None" again
-            }
-        } else {
-            // parse the deepgram result to see if we have a game connected with the spoken game code
-            if let tungstenite::Message::Text(msg) = msg.clone() {
+                // parse the deepgram result to see if we have a game connected with the spoken game code
                 let deepgram_response: Result<deepgram_response::StreamingResponse, _> =
                     serde_json::from_str(&msg);
 
