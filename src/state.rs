@@ -11,6 +11,6 @@ pub struct State {
 }
 
 pub struct GameTwilioTxs {
-    pub game_tx: crossbeam_channel::Sender<Message>,
-    pub twilio_tx: Option<crossbeam_channel::Sender<Message>>,
+    pub game_tx: async_channel::Sender<Message>,
+    pub twilio_tx: Option<async_channel::Sender<Message>>,
 }

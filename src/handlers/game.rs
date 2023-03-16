@@ -33,7 +33,7 @@ async fn pop_a_game_code(state: Arc<State>) -> Option<String> {
 
 async fn handle_socket(socket: WebSocket, state: Arc<State>) {
     let (mut game_sender, game_reader) = socket.split();
-    let (game_tx, game_rx) = crossbeam_channel::unbounded();
+    let (game_tx, game_rx) = async_channel::unbounded();
 
     let game_code = pop_a_game_code(state.clone()).await;
 
@@ -83,10 +83,10 @@ async fn handle_socket(socket: WebSocket, state: Arc<State>) {
 /// when the twilio handler sends a message here via the game_tx,
 /// forward it to the game via the game_sender ws handle
 async fn handle_from_game_tx(
-    game_rx: crossbeam_channel::Receiver<Message>,
+    game_rx: async_channel::Receiver<Message>,
     mut game_sender: SplitSink<WebSocket, axum::extract::ws::Message>,
 ) {
-    while let Ok(message) = game_rx.recv() {
+    while let Ok(message) = game_rx.recv().await {
         let _ = game_sender.send(message.into()).await;
     }
 }

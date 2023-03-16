@@ -29,7 +29,7 @@ pub async fn twilio_handler(
 
 async fn handle_socket(socket: WebSocket, state: Arc<State>) {
     let (this_sender, this_receiver) = socket.split();
-    let (twilio_tx, twilio_rx) = crossbeam_channel::unbounded();
+    let (twilio_tx, twilio_rx) = async_channel::unbounded();
 
     // prepare the deepgram connection request with the api key authentication
     let builder = http::Request::builder()
@@ -65,7 +65,7 @@ async fn handle_socket(socket: WebSocket, state: Arc<State>) {
 /// obtain TTS audio for the message and forward it to twilio via
 /// the twilio sender ws handle
 async fn handle_from_twilio_tx(
-    twilio_rx: crossbeam_channel::Receiver<Message>,
+    twilio_rx: async_channel::Receiver<Message>,
     mut twilio_sender: SplitSink<WebSocket, axum::extract::ws::Message>,
     streamsid_rx: oneshot::Receiver<String>,
 ) {
@@ -73,7 +73,7 @@ async fn handle_from_twilio_tx(
         .await
         .expect("Failed to receive streamsid from handle_from_twilio_ws.");
 
-    while let Ok(message) = twilio_rx.recv() {
+    while let Ok(message) = twilio_rx.recv().await {
         if let Message::Text(message) = message {
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
@@ -131,7 +131,7 @@ async fn handle_from_twilio_tx(
 async fn handle_to_game_rx(
     state: Arc<State>,
     mut deepgram_receiver: SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>,
-    twilio_tx: crossbeam_channel::Sender<Message>,
+    twilio_tx: async_channel::Sender<Message>,
 ) {
     let mut game_code: Option<String> = None;
 
