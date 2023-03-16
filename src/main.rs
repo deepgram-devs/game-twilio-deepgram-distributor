@@ -2,17 +2,28 @@ use axum::{routing::get, Extension, Router};
 use axum_server::tls_rustls::RustlsConfig;
 use futures::lock::Mutex;
 use std::collections::{HashMap, HashSet};
+use std::path::PathBuf;
 use std::sync::Arc;
+use structopt::StructOpt;
 
 mod audio;
+mod config;
 mod deepgram_response;
 mod handlers;
 mod message;
 mod state;
 mod twilio_response;
 
+#[derive(StructOpt, Debug)]
+struct Opt {
+    #[structopt(parse(from_os_str), short = "c", long = "config")]
+    config: Option<PathBuf>,
+}
+
 #[tokio::main]
 async fn main() {
+    let opt = Opt::from_args();
+
     let proxy_url = std::env::var("PROXY_URL").unwrap_or_else(|_| "127.0.0.1:5000".to_string());
 
     let deepgram_url = std::env::var("DEEPGRAM_URL").unwrap_or_else(|_| {
@@ -40,11 +51,28 @@ async fn main() {
         }
     };
 
-    let mut game_codes = HashSet::new();
+    // this may be idiomatic and slightly succinct, but wow is it confusing
+    let game_codes = match opt.config.and_then(|config_path| {
+        let config_file = std::fs::File::open(config_path).expect("Failed to open config file.");
+        let config: config::Config =
+            serde_json::from_reader(config_file).expect("Failed to read config file.");
 
-    for number in 0..100 {
-        game_codes.insert(number.to_string());
-    }
+        if config.game_codes.is_empty() {
+            None
+        } else {
+            Some(config.game_codes)
+        }
+    }) {
+        Some(game_codes) => HashSet::from_iter(game_codes.iter().cloned()),
+        None => {
+            let mut game_codes = HashSet::new();
+
+            for number in 0..100 {
+                game_codes.insert(number.to_string());
+            }
+            game_codes
+        }
+    };
 
     let state = Arc::new(state::State {
         deepgram_url,
