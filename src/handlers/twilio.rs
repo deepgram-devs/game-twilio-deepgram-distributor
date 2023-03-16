@@ -145,9 +145,6 @@ async fn handle_to_game_rx(
                         .game_tx
                         .send(Message::Text(msg.clone()).into())
                         .await;
-                } else {
-                    // this game existed, and no longer exists, so close the connection(s)?
-                    // or just make game "None" again
                 }
             } else {
                 // parse the deepgram result to see if we have a game connected with the spoken game code
