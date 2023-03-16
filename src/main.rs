@@ -16,7 +16,7 @@ mod twilio_response;
 
 #[derive(StructOpt, Debug)]
 struct Opt {
-    #[structopt(parse(from_os_str))]
+    #[structopt(parse(from_os_str), short = "c", long = "config")]
     config: Option<PathBuf>,
 }
 
@@ -51,6 +51,7 @@ async fn main() {
         }
     };
 
+    // this may be idiomatic and slightly succinct, but wow is it confusing
     let game_codes = match opt.config.and_then(|config_path| {
         let config_file = std::fs::File::open(config_path).expect("Failed to open config file.");
         let config: config::Config =

@@ -48,3 +48,89 @@ After that, you should start seeing Deepgram ASR responses stream into your webs
 If you want to try this out in a game/game engine, see the simple demo here:
 
 https://github.com/nikolawhallon/GodotPhonecall
+
+## Notes From Deployment
+
+I deployed following my typical procedure (link(s) to come).
+
+My file `/etc/nginx/sites-available/robotdreams.deepgram.com` had the following contents:
+
+```
+server {
+    root /var/www/robotdreams.deepgram.com/html;
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name robotdreams.deepgram.com;
+
+    location / {
+        proxy_pass http://0.0.0.0:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Connection "keep-alive";
+        proxy_set_header Host $host;
+    }
+
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/robotdreams.deepgram.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/robotdreams.deepgram.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}
+server {
+    if ($host = robotdreams.deepgram.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    listen 80;
+    listen [::]:80;
+
+    server_name robotdreams.deepgram.com;
+    return 404; # managed by Certbot
+}
+```
+
+My `docker-compose.yml` file had the following contents:
+
+```
+version: '3.7'
+services:
+  web:
+    image: browncanstudios/robot-dreams-server:0.1.0
+    ports:
+      - "5000:5000"
+    volumes:
+      - /home/ubuntu/config.json:/config.json:ro
+    environment:
+      - PROXY_URL=0.0.0.0:5000
+      - AWS_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=SECRET
+      - AWS_SECRET_ACCESS_KEY=SECRET
+      - TWILIO_PHONE_NUMBER=SECRET
+      - DEEPGRAM_API_KEY=SECRET
+    command: --config=config.json
+```
+
+The `config.json` file had the following contents:
+
+```
+{
+    "game_codes":["apple"]
+}
+```
+
+Finally, I was able to connect with the following:
+
+```
+websocat wss://robotdreams.deepgram.com:443/game
+```
+
+Things I understand enough:
+* The `PROXY_URL` needs to be `0.0.0.0`, not `127.0.0.1` or `localhost` inside the docker container.
+
+Things I don't understand well:
+* Why did I need to specify `443` in the websockets URL?
+* Why didn't I need to provide my Rust server `CERT_PEM` or `KEY_PEM`?
+* What all is going on with the `nginx` configuration?
+* I had to remove the `CMD` block from my `Dockerfile` - why was it populating a command with `''`? (Maybe this makes sense actually.)
