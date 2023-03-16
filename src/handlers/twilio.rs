@@ -143,7 +143,8 @@ async fn handle_to_game_rx(
                     // send the message to the game
                     let _ = game_twilio_tx
                         .game_tx
-                        .send(Message::Text(msg.clone()).into());
+                        .send(Message::Text(msg.clone()).into())
+                        .await;
                 }
             } else {
                 // parse the deepgram result to see if we have a game connected with the spoken game code
@@ -170,7 +171,8 @@ async fn handle_to_game_rx(
                         // send a message to the game to let it know a phone has connected
                         let _ = game_twilio_tx
                             .game_tx
-                            .send(Message::Text("connected".to_string()).into());
+                            .send(Message::Text("connected".to_string()).into())
+                            .await;
                     }
                 }
             }

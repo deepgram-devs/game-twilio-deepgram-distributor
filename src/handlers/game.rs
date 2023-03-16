@@ -114,7 +114,7 @@ async fn handle_from_game_ws(
                 let mut games = state.games.lock().await;
                 if let Some(game_twilio_tx) = games.get_mut(&game_code) {
                     if let Some(twilio_tx) = &game_twilio_tx.twilio_tx {
-                        let _ = twilio_tx.send(Message::from(msg.clone()).into());
+                        let _ = twilio_tx.send(Message::from(msg.clone()).into()).await;
                     }
                 }
             }
