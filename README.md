@@ -8,7 +8,7 @@ to the client, using Deepgram's ASR.
 
 The intention, then, is to be able to have, say, a video game connect to the server, display the phone number and
 unique code to the player, and then the player can call in and start issuing commands to the game via their phone.
-The server could/should be extended to handle text-to-speech as well, allowing players to call into the game
+This version of the server has been extended to handle text-to-speech as well, allowing players to call into the game
 and engage with NPCs via some kind of conversational AI flow or something.
 
 ## Setting up Twilio
@@ -31,8 +31,12 @@ Attach this TwiML Bin to one of your Twilio phone numbers. Check the Twilio docu
 
 You can spin up the server by simply running `cargo run`. However, you will need the following environment variables set:
 
-* `DEEPGRAM_API_KEY`: a Deepgram API Key to enable transcript
+* `DEEPGRAM_API_KEY`: a Deepgram API Key to enable transcription
 * `TWILIO_PHONE_NUMBER`: your Twilio phone number using the TwiML Bin described in a previous section
+* `AWS_REGION`: the AWS region to use for Polly (`us-west-2` should be fine)
+* `AWS_ACCESS_KEY_ID`: AWS Key ID for Polly
+* `AWS_SECRET_ACCESS_KEY`: AWS Secret Access Key for Polly
+
 
 ## Testing With a Client
 
