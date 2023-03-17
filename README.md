@@ -104,6 +104,7 @@ services:
       - /home/ubuntu/config.json:/config.json:ro
     environment:
       - PROXY_URL=0.0.0.0:5000
+      - DEEPGRAM_URL=wss://api.deepgram.com/v1/listen?encoding=mulaw&sample_rate=8000&numerals=true&tier=enhanced&interim_results=true
       - AWS_REGION=us-west-2
       - AWS_ACCESS_KEY_ID=SECRET
       - AWS_SECRET_ACCESS_KEY=SECRET
