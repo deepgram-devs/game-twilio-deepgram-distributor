@@ -38,4 +38,3 @@ RUN apt-get update && \
 COPY --from=builder /bin/game-twilio-deepgram-distributor /bin/game-twilio-deepgram-distributor
 
 ENTRYPOINT ["/bin/game-twilio-deepgram-distributor"]
-CMD [""]
