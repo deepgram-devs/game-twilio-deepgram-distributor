@@ -90,3 +90,91 @@ git checkout stt
 
 Then import the game with Godot 3.5, edit the file under `GodotPhonecall/Scenes/Game.gd`, and replace the url on line 16 with your server's url
 (if you are running both the game and the server locally, and the server is listening on port 5000, then the url is probably already correct).
+
+## A Bit of Code
+
+Let's look at some of the code in the `stt` branch of the `game-twilio-deepgram-distributor` server to see how the system described here
+is implemented. We won't be going over the full code verbatim, but will explain what each module does and go over some specific parts
+which are most relevant. The server is written in Rust and uses the `axum` web server library to handle incoming websocket connections,
+and the `tungstenite` library for handling outgoing websocket connections. The server is written asynchronously using the `tokio` runtime.
+
+### High-Level Overview
+
+If you haven't already from going over a previous section, checkout the repository and the `stt` branch:
+
+```
+git clone git@github.com:nikolawhallon/game-twilio-deepgram-distributor.git
+cd game-twilio-deepgram-distributor
+git checkout stt
+```
+
+I'll start by explaining at a high-level the module structure:
+
+* `src/handlers/game.rs` - defines the websocket handler for games connecting to the `/game` endpoint
+* `src/handlers/mod.rs` - exposes the `handlers/game` and `handlers/twilio` modules
+* `src/handlers/twilio.rs` - defines the websocket handler for Twilio streams connecting to the `/twilio` endpoint
+* `src/audio.rs` - defines helper functions for processing audio
+* `src/deepgram_response.rs` - defines the structs for Deepgram's API responses
+* `src/main.rs` - sets up the initial server state and starts the server
+* `src/message.rs` - defines helpers for converting between `axum` websocket messages and `tungstenite` ones
+* `src/state.rs` - defines a struct which represents the state of the server
+* `src/twilio_response.rs` - defines the structs we'll need for interacting with the Twilio streaming API
+
+### The Server State
+
+Let's start by taking a look at the server state. In `state.rs` the following struct is defined:
+
+```
+pub struct State {
+    pub deepgram_url: String,
+    pub api_key: String,
+    pub twilio_phone_number: String,
+    pub games: Mutex<HashMap<String, SplitSink<WebSocket, Message>>>,
+    pub game_codes: Mutex<HashSet<String>>,
+}
+```
+
+The server needs to know the Deepgram URL (`deepgram_url`), including any query parameters we want to send to
+Deepgram when opening up our streaming websocket connections for transcription. It also needs a Deepgram API key
+(`api_key`) to authenticate with Deepgram when connecting.
+Next is `twilio_phone_number` - the server is meant to handle calls to a single Twilio phone number, and that's what
+this field holds.
+
+Next let's look at `game_codes` - it is a `Mutex` of a `HashSet` of `String`s. Since our game codes
+are going to be integers, this inner type could have been a `usize` or something similar, but since Deepgram returns
+numbers in a transcript as `String`s, keeping this inner type a `String` will work fine (and would allow us to change
+the game codes to any arbitrary words as well). When a new game client connects to the server, we will remove a game
+code from the set of game codes, and use it as the key to map to the game client's websocket connection's sending half.
+Once the game client's websocket connection is closed, we will return its game code back to the `game_codes`' `HashSet`.
+
+This brings us to the `games` field - it is a `Mutex` of a `HashMap` mapping a `String` (a game code) to a
+`SplitSink<WebSocket, Message>`, which is the sending half of a game client's websocket connection. The `games` and `game_codes`
+fields need to be wrapped in `Mutex`s because they need to be accessed by both the Twilio and the game websocket handlers,
+which run asynchronously and independently.
+
+### The Game Websocket Handler
+
+asdf
+
+### The Twilio Websocket Handler
+
+fdsa
+
+### Tying it Together with Main
+
+wasd
+
+## Conclusion
+
+This guide should help get you up and running with streaming transcription into your game via a phonecall.
+At this point, there are already several cool applications that can be built, like a game where you need
+to perform some voice control operations, but for which your gaming device does not have a microphone
+(plus, having to use your phone, while potentially cumbersome, is really fun, bizarre, and meta).
+
+However, in the next parts of this tutorial series, we will expand on this server to allow for
+interactions - imagine calling a character in a game with your phone and having an actual conversation
+which impacts what is going on in the game world. Imagine if the phonecalls from Pokémon Silver/Gold/Crystal
+where trainers are challenging you to a rematch used your real physical phone, or a dating sim where
+you can continue carrying out a conversation via phone even after you have logged off of the game,
+or a game where you can call a number to order a pizza which your character then receives in-game
+for additional health or a stat boost. The possibilities are weird, but limitless!
