@@ -154,7 +154,73 @@ which run asynchronously and independently.
 
 ### The Game Websocket Handler
 
-asdf
+Now let's turn our attention to the handler for websocket connections to the `/game` endpoint. This is mostly handled
+in the `handle_socket` function in the `src/handlers/game.rs` module. This function is reproduced below:
+
+```
+async fn handle_socket(socket: WebSocket, state: Arc<State>) {
+    let (mut game_sender, mut game_reader) = socket.split();
+
+    let game_code = pop_a_game_code(state.clone()).await;
+
+    match game_code {
+        Some(game_code) => {
+            // we add this manual scoping so that we drop the games lock after this logic
+            {
+                let mut games = state.games.lock().await;
+
+                // tell the game the phone number to call
+                game_sender
+                    .send(Message::Text(state.twilio_phone_number.clone()).into())
+                    .await
+                    .expect("Failed to send the phone number to the game.");
+
+                // tell the game what game code we are assigning it
+                game_sender
+                    .send(Message::Text(game_code.clone()).into())
+                    .await
+                    .expect("Failed to send the game code to the game.");
+
+                // insert a game ws (sender) handle for this game code, so that our Twilio handler can reference it
+                games.insert(game_code.clone(), game_sender);
+            }
+
+            while let Some(Ok(msg)) = game_reader.next().await {
+                if let Message::Close(_) = Message::from(msg) {
+                    let mut games = state.games.lock().await;
+                    games.remove(&game_code);
+                    let mut game_codes = state.game_codes.lock().await;
+                    game_codes.insert(game_code.clone());
+                }
+            }
+
+            let mut games = state.games.lock().await;
+            games.remove(&game_code);
+            let mut game_codes = state.game_codes.lock().await;
+            game_codes.insert(game_code);
+        }
+        None => {
+            return;
+        }
+    }
+}
+```
+
+When a game client connects to `/game`, the first thing our server does is try to obtain a unique game code for the session
+from the server state's `game_codes` field - this is done via
+the helper function, `pop_a_game_code`. If we weren't able to obtain a game code (because all game codes are being used),
+we immediately return, which will close the websocket connection. This limits the number of active game sessions possible,
+so if the game codes set contains, say, 100 entries, then only 100 game sessions can be active at one time. However, the logic
+for populating or expanding the game codes set can be altered in a number of ways to allow for a virtually unlimited
+number of game codes.
+
+If we did obtain a game code, we immediately send two, websocket text messages back to the game client, the first containing
+the Twilio phone number that this server serves, and the second containing the game code we have assigned to this session.
+Then we insert the sending half of this game-server websocket connection into the server state's `games` object - this is
+what will allow the Twilio websocket handler the ability to send messages to a connected game session.
+
+Finally, we have some code which will restore the `games` and `game_codes` fields of the server state when this game client's
+websocket connection closes - returning the assigned game code to the game codes set.
 
 ### The Twilio Websocket Handler
 
