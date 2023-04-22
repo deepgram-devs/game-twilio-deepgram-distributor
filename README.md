@@ -224,11 +224,63 @@ websocket connection closes - returning the assigned game code to the game codes
 
 ### The Twilio Websocket Handler
 
-fdsa
+The main logic for handling incoming phonecalls to the server's Twilio number is in the `src/handlers/twilio.rs` module.
+Specifically the `handle_socket`, `handle_from_twilio`, and `handle_to_game` functions. Take a look at the module
+to follow along - I will describe what these functions are doing here.
+
+The function `handle_socket` splits the incoming websocket handler from Twilio into sending and receiving halfs,
+opens a websocket connection to Deepgram, using the Deepgram API key stored in the server state,
+splits the Deepgram websocket handler into sending and receiving halfs, and then spawns two asynchronous tasks:
+
+```
+    tokio::spawn(handle_to_game(Arc::clone(&state), deepgram_reader));
+    tokio::spawn(handle_from_twilio(this_receiver, deepgram_sender));
+```
+
+Here, `handle_from_twilio` takes the Twilio websocket receiver and the Deepgram websocket sender. This function receives
+messages from Twilio, parses the messages to extract the audio from the incoming phonecall, and passes that audio along to Deepgram
+for transcription. Then, `handle_to_game` will receive the transcription results from Deepgram because it takes the Deepgram
+websocket reader as an argument. Its other argument, the server state, allows it to access the `games` fields on the server
+state. `handle_to_game` will inspect Deepgram transcripts to see if the caller has said one of the keys to the `games` `HashMap`.
+If it has, our server can now patch this phonecall to the game with the spoken game code, and start sending all Deepgram messages
+through to that game client.
 
 ### Tying it Together with Main
 
-wasd
+`src/main.rs` spins up the axum webserver handling requests to two endpoints - `/game` and `/twilio`. The handlers
+for these endpoints were explained in a previous section. Besides extracting the necessary values for `TWILIO_PHONE_NUMBER`
+and `DEEPGRAM_API_KEY`, as described in a previous section, `main.rs` does two other note-worthy things.
+
+The first is it defines the URL to use to connect to Deepgram, with a default value of:
+
+```
+wss://api.deepgram.com/v1/listen?encoding=mulaw&sample_rate=8000&numerals=true
+```
+
+Of note here is that we set the encoding to `mulaw` and the sample rate to `8000` - this is the format of the raw audio
+that Twilio will send to the server. Also, we set `numerals=true` because we want our game codes in this demos to simply be numbers.
+
+Second is it creates the initial state of the server, and notably defines the set of game codes via the following:
+
+```
+    let mut game_codes = HashSet::new();
+
+    for number in 0..100 {
+        game_codes.insert(number.to_string());
+    }
+
+    let state = Arc::new(state::State {
+        deepgram_url,
+        api_key,
+        twilio_phone_number,
+        games: Mutex::new(HashMap::new()),
+        game_codes: Mutex::new(game_codes),
+    });
+```
+
+Here we are simply setting the game codes to all numbers `0`, `1`, `2`, ..., `99`. When adapting this demo for a real game application,
+this logic which sets up the game codes ought likely to be modified. In one of my games, I create a configuration file where I can list
+out all game codes I want the server to use. One can imagine other ways to populate, or to auto-generate on the fly, game codes.
 
 ## Conclusion
 
