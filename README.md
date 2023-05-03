@@ -13,6 +13,10 @@ is still fully test-able with utilities such as websocat.
 
 The TTS service we will use here in Amazon Polly, although after grasping the general strategy here, one could adapt the server to use any TTS provider.
 
+Here is a diagram of the system we will be building - note the parts which are new since "Part 1":
+
+<img src="./README_assets/game-twilio-deepgram-distributor-part-2.png" alt="A diagram of the whole system." style="max-width: 1000px;display: block;margin-left: auto;margin-right: auto;">
+
 ## Pre-requisites
 
 You will need the following:
