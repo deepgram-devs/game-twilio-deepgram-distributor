@@ -12,6 +12,10 @@ utilities such as `websocat`.
 The server we will be walking through is written in Rust, but understanding the core architecture of the system
 should allow you to build analogous servers in other languages.
 
+Here is a diagram of the system we will be building:
+
+<img src="./README_assets/part-1-diagram.png" alt="A diagram of the whole system." style="max-width: 1339px;display: block;margin-left: auto;margin-right: auto;">
+
 ## Pre-requisites
 
 You will need the following:
