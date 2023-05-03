@@ -15,7 +15,7 @@ The TTS service we will use here in Amazon Polly, although after grasping the ge
 
 Here is a diagram of the system we will be building - note the parts which are new since "Part 1":
 
-<img src="./README_assets/game-twilio-deepgram-distributor-part-2.png" alt="A diagram of the whole system." style="max-width: 1339px;display: block;margin-left: auto;margin-right: auto;">
+<img src="./README_assets/part-2-diagram.png" alt="A diagram of the whole system." style="max-width: 1339px;display: block;margin-left: auto;margin-right: auto;">
 
 ## Pre-requisites
 
