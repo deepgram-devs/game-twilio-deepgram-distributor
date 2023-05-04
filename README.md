@@ -97,7 +97,9 @@ git checkout tts
 Then import the game with Godot 3.5, edit the file under `GodotPhonecall/Scenes/Game.gd`, and replace the url on line 16 with your server's url
 (if you are running both the game and the server locally, and the server is listening on port 5000, then the url is probably already correct).
 
-**TODO: explain this demo.**
+When you call the phone number and say the game code presented to you by the game, the game will ask you if you would like to order a mushroom,
+pepperoni, or cheese pizza. If you respond with one of these three options, the game will display which option you picked! Exciting, right?
+Well one can extrapolate to some pretty cool ideas.
 
 ## A Bit of Code
 
@@ -121,11 +123,161 @@ The high-level module structure is the same as it was in "Part 1":
 
 ### Architecture Changes from Part 1
 
-fdsa
+In the server presented in "Part 1," once the caller said a game code,
+the Twilio websocket handler was able to get a handle to the sender half of
+the websocket connection to the game session, and with it send Deepgram ASR messages to a game session.
+The game session never needed to send a message back to our server, so this sufficed. However, now
+we intend to give the ability to the game session to send text messages back to our server to then use
+TTS to turn into audio to then send back to the caller's phone via the Twilio websocket handler.
+
+This added bit of complexity encourages a slightly new design. Let's look at the new `src/state.rs`
+for more details:
+
+```
+use crate::message::Message;
+use futures::lock::Mutex;
+use std::collections::{HashMap, HashSet};
+
+pub struct State {
+    pub deepgram_url: String,
+    pub api_key: String,
+    pub twilio_phone_number: String,
+    pub games: Mutex<HashMap<String, GameTwilioTxs>>,
+    pub game_codes: Mutex<HashSet<String>>,
+}
+
+pub struct GameTwilioTxs {
+    pub game_tx: async_channel::Sender<Message>,
+    pub twilio_tx: Option<async_channel::Sender<Message>>,
+}
+```
+
+The `games` field used to be of type `Mutex<HashMap<String, SplitSink<WebSocket, Message>>>`, but now
+contains the `Sender` half of two `async_channel` channels instead.
+
+This is going to allow the Twilio websocket handler to send Deepgram ASR messages to a `game_tx`, and when the `game_rx` receives these messages
+in the game client websocket handler code, it can forward them on to the game client.
+
+Likewise, the game client websocket handler will be able to receive text websocket messages from the game client,
+forward those to the Twilio websocket handler code via a `twilio_tx`, and when the `twilio_rx` receives
+these messages, the Twilio websocket hanlder will be able to make TTS requests, and forward that audio
+to the ongoing phone call.
+
+This is the main architecture change from the server from "Part 1," and hopefully the doc-comments present in the code
+can help clarify more!
 
 ### Text-to-Speech and Twilio Media Messages
 
-wasd
+This server is using Amazon Polly for TTS - specifically, the new [developer previous release of the Amazon Polly Rust SDK](https://docs.aws.amazon.com/sdk-for-rust/latest/dg/rust_polly_code_examples.html).
+In order to forward audio from the TTS to your phone, we will use the [Twilio streaming media API](https://www.twilio.com/docs/voice/twiml/stream#message-media-to-twilio),
+which will require us to obtain the `streamSid` of the Twilio stream (a unique identifier for the stream, provided by Twilio), and to convert the TTS audio to `mulaw`. Let's take a look at the main
+handler for this logic and explain its parts:
+
+```
+/// when the game handler sends a message here via the twilio_tx,
+/// obtain TTS audio for the message and forward it to twilio via
+/// the twilio sender ws handle
+async fn handle_from_twilio_tx(
+    twilio_rx: async_channel::Receiver<Message>,
+    mut twilio_sender: SplitSink<WebSocket, axum::extract::ws::Message>,
+    streamsid_rx: oneshot::Receiver<String>,
+) {
+    let streamsid = streamsid_rx
+        .await
+        .expect("Failed to receive streamsid from handle_from_twilio_ws.");
+
+    while let Ok(message) = twilio_rx.recv().await {
+        if let Message::Text(message) = message {
+            let shared_config = aws_config::from_env().load().await;
+            let client = Client::new(&shared_config);
+
+            if let Ok(polly_response) = client
+                .synthesize_speech()
+                .output_format(OutputFormat::Pcm)
+                .sample_rate("8000")
+                .text(message)
+                .voice_id(VoiceId::Joanna)
+                .send()
+                .await
+            {
+                if let Ok(pcm) = polly_response
+                    .audio_stream
+                    .collect()
+                    .await
+                    .and_then(|aggregated_bytes| Ok(aggregated_bytes.to_vec()))
+                {
+                    let mut i16_samples = Vec::new();
+                    for i in 0..(pcm.len() / 2) {
+                        let mut i16_sample = pcm[i * 2] as i16;
+                        i16_sample |= ((pcm[i * 2 + 1]) as i16) << 8;
+                        i16_samples.push(i16_sample);
+                    }
+
+                    let mut mulaw_samples = Vec::new();
+                    for sample in i16_samples {
+                        mulaw_samples.push(audio::linear_to_ulaw(sample));
+                    }
+
+                    // base64 encode the mulaw, wrap it in a Twilio media message, and send it to Twilio
+                    let base64_encoded_mulaw = general_purpose::STANDARD.encode(&mulaw_samples);
+
+                    let sending_media =
+                        twilio_response::SendingMedia::new(streamsid.clone(), base64_encoded_mulaw);
+
+                    let _ = twilio_sender
+                        .send(Message::Text(serde_json::to_string(&sending_media).unwrap()).into())
+                        .await;
+                }
+            }
+        }
+    }
+}
+```
+
+This handler takes the `twilio_rx` explained in the previous section,
+the sending half of the Twilio websocket connection (`twilio_sender`), and
+the receiving end of a one-shot channel (`streamsid_rx`) as input.
+
+The `streamSid` is sent by Twilio to our server, so the function which handles the
+receiving half of the Twilio websocket connection will obtain this value and send it here
+via the one-shot channel.
+
+Then, we will loop over text messages received by `twilio_rx` (ultimately being text messages
+send to our server from a game client), create a Polly client, make a Polly request to obtain
+the TTS audio of the text, using 8000 Hz, one channel PCM, convert this into 8000 Hz, one channel
+`mulaw` via the new `linear_to_ulaw` function defined in `src/audio.rs`, `base64` encode the `mulaw`
+audio, and send it back to Twilio as a serialized `SendingMedia` object. The definition for this type
+has been added to `src/twilio_response.rs`:
+
+```
+#[derive(Serialize, Deserialize, Default, Debug)]
+pub struct Media {
+    pub payload: String,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct SendingMedia {
+    event: String,
+    stream_sid: String,
+    media: Media,
+}
+
+impl SendingMedia {
+    pub fn new(stream_sid: String, payload: String) -> Self {
+        SendingMedia {
+            event: "media".to_string(),
+            stream_sid,
+            media: Media { payload },
+        }
+    }
+}
+```
+
+and notably requires the `streamSid` so that Twilio knows where to send the audio.
+
+This is the bulk of the new logic in this server, as compared to the server in "Part 1," and hopefully the design
+and strategy here is clear enough to apply to suit your stack and your needs!
 
 ## Conclusion
 
