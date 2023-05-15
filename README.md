@@ -1,101 +1,76 @@
-# game-twilio-deepgram-distributor
+# Calling Your Video Game With Your Phone: Part 3
 
-This is a websockets server which communicates with Twilio, Deepgram, and game clients (well any client really).
-When a client connects to the `/game` endpoint, the server will send two text messages. The first one contains a string
-which should be interpretted as a phone number. The second one contains a unique code for the client. If you then
-call the phone number and say the unique code, the server will start to proxy transcriptions of your speech on the phone
-to the client, using Deepgram's ASR.
+In this final part in the 3-part series, we will look at a simple game
+made for a game jam which uses a slightly modified version of the server
+from "Part 2" to offer a unique gameplay twist! That game is
+[Robot Dreams](https://browncanstudios.itch.io/robot-dreams),
+made for [the Godot Wildjam #55](https://itch.io/jam/godot-wild-jam-55).
 
-The intention, then, is to be able to have, say, a video game connect to the server, display the phone number and
-unique code to the player, and then the player can call in and start issuing commands to the game via their phone.
-This version of the server has been extended to handle text-to-speech as well, allowing players to call into the game
-and engage with NPCs via some kind of conversational AI flow or something.
+The code for the backend server can be found on the `robot-dreams` branch
+of the `game-twilio-deepgram-distributor` repository [here](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/robot-dreams),
+and the Godot game which is a client to this server can be found [here](https://github.com/nikolawhallon/RobotDreams).
 
-## Setting up Twilio
+_INCLUDE THE ROBOT DREAMS ICON_
 
-I would spin up this server locally and use `ngrok` to expose it. Then create a TwiML Bin like the following:
+## The Game Jam at a High Level
 
-```
-<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Say>Say the code you see in the game.</Say>
-  <Connect>
-    <Stream url="wss://8e8a-97-113-39-114.ngrok.io/twilio" />
-  </Connect>
-</Response>
-```
+The duration of the game jam was a little over a week, and games made
+for it had to attempt to match the following theme
+and optional "wild-cards":
 
-Attach this TwiML Bin to one of your Twilio phone numbers. Check the Twilio documentation for more info.
+![Theme icon](README_assets/theme.png)
+![The theme: Dreams](README_assets/dreams.png)
+![Wildcard icon](README_assets/wildcards.png)
+![The wildcards: "Disassemble," "A Fork in the Road," "Kaboom!"](README_assets/threewildcards.png)
 
-## Spinning Up the Server
+There were 93 entries to the game jam, which were collectively rated 1423 times in the week after
+submissions closed. The ratings for Robot Dreams can be seen [here](https://itch.io/jam/godot-wild-jam-55/rate/1964316).
+Overall, games were rated by a passionate, enthustiastic, and supportive community, and I
+encourage anyone to participate in these sorts of events, and feel free to add interesting new tech
+to your game jam games!
 
-You can spin up the server by simply running `cargo run`. However, you will need the following environment variables set:
+## Robot Dreams
 
-* `DEEPGRAM_API_KEY`: a Deepgram API Key to enable transcription
-* `TWILIO_PHONE_NUMBER`: your Twilio phone number using the TwiML Bin described in a previous section
-* `AWS_REGION`: the AWS region to use for Polly (`us-west-2` should be fine)
-* `AWS_ACCESS_KEY_ID`: AWS Key ID for Polly
-* `AWS_SECRET_ACCESS_KEY`: AWS Secret Access Key for Polly
+Our entry, "Robot Dreams", aimed to match the theme of "Dreams" as well as the wildcard "A Fork in the Road"
+by use of the call-your-game system described in this series. You begin the game
+as a human falling asleep in your bed, only to wake up as a robot in a construction site
+against the backdrop of a cityscape. In order to wake up, you, the player, must find a way to
+get the robot to jump from a great height. Each time you do, you wake up in another level - another dream.
+After 3 levels, you wake up - but as a robot - implying you are in an infinite cycle of dreams!
 
+_INCLUDE A GAMEPLAY SCREENSHOT_
 
-## Testing With a Client
+The only way to truly wake up - as a human - is to find a payphone in Level 2, which instructs you to
+call a phone number and tell the AI on the other end a secret password - if you do this with your
+IRL phone, you skip ahead to the "good" ending.
 
-Testing with websocat is fairly easy. If you spin up the server locally, just connect via:
+_INCLUDE A GAMEPLAY SCREENSHOT_
 
-```
-websocat ws://127.0.0.1:5000/game
-```
+A bit of a mini, meta game, the actual phonecall has very little interaction involved, but even still
+it adds a very cool sense of delight when your real-world action causes immediate in-game consequences!
 
-Call the phone number that websocat spits out, and on the phone say the unique code that websocat also spits out.
-After that, you should start seeing Deepgram ASR responses stream into your websocat session.
+## Some Technical Details
 
-If you want to try this out in a game/game engine, see the simple demo here:
-
-https://github.com/nikolawhallon/GodotPhonecall
-
-## Notes From Deployment
-
-I deployed following my typical procedure (link(s) to come).
-
-My file `/etc/nginx/sites-available/robotdreams.deepgram.com` had the following contents:
+The technical changes with respect to the server presented in "Part 2" of this series are very
+minor and can be reviewed [here](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/pull/4).
+The main change is the ability to specify a config file via the command line using `--config=some_json_file`.
+This config file will enumerate all game codes that can be used to patch phone calls into game session.
+The config file used for the deployed version of Robot Dreams is abbreviated below:
 
 ```
-server {
-    root /var/www/robotdreams.deepgram.com/html;
-    index index.html index.htm index.nginx-debian.html;
-
-    server_name robotdreams.deepgram.com;
-
-    location / {
-        proxy_pass http://0.0.0.0:5000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "Upgrade";
-        proxy_set_header Connection "keep-alive";
-        proxy_set_header Host $host;
-    }
-
-    listen [::]:443 ssl ipv6only=on; # managed by Certbot
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/robotdreams.deepgram.com/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/robotdreams.deepgram.com/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-}
-server {
-    if ($host = robotdreams.deepgram.com) {
-        return 301 https://$host$request_uri;
-    } # managed by Certbot
-
-    listen 80;
-    listen [::]:80;
-
-    server_name robotdreams.deepgram.com;
-    return 404; # managed by Certbot
+{
+    "game_codes":["apple", "banana", "kiwi", ..., "oregano"]
 }
 ```
 
-My `docker-compose.yml` file had the following contents:
+there is a pretty small, finite number of game codes in the list, but with no expectation of large numbers
+of simultaneous game players, this isn't an issue. One can imagine modifying the server further to
+interact with a database of game codes, with `POST`, `GET`, `DELETE`, etc endpoints if one's project were
+to scale - surely there are many other mechanisms to populate allowed game codes.
+
+The server was run on an AWS instance using `docker` and `docker-compose` - after building
+the `docker` image `browncanstudios/robot-dreams-server:0.1.0`, it was spun up with the following `docker-compose`
+file (sensitive information redacted of course):
 
 ```
 version: '3.7'
@@ -109,33 +84,24 @@ services:
     environment:
       - PROXY_URL=0.0.0.0:5000
       - DEEPGRAM_URL=wss://api.deepgram.com/v1/listen?encoding=mulaw&sample_rate=8000&numerals=true&tier=enhanced&interim_results=true
-      - AWS_REGION=us-west-2
-      - AWS_ACCESS_KEY_ID=SECRET
-      - AWS_SECRET_ACCESS_KEY=SECRET
-      - TWILIO_PHONE_NUMBER=SECRET
-      - DEEPGRAM_API_KEY=SECRET
+      - AWS_REGION=***
+      - AWS_ACCESS_KEY_ID=***
+      - AWS_SECRET_ACCESS_KEY=***
+      - TWILIO_PHONE_NUMBER=***
+      - DEEPGRAM_API_KEY=***
     command: --config=config.json
 ```
 
-The `config.json` file had the following contents:
+## Conclusion
 
-```
-{
-    "game_codes":["apple"]
-}
-```
+This was just a quick game made in a little over a week, and has many short-comings. For one, there is no feedback on the phone
+when the AI is unable to make out a game code you may be saying, and indeed the AI is only listening for English and isn't optimized
+for many English accents. Deepgram, and other vendors, provide models in many languages and accents, and even offer automatic language
+detection (although usually not for real-time streaming applications), so improving in this area would be huge for
+accessibility. Speaking of accessibility though, requiring a phone call to achieve the "good ending" itself can be a blocker,
+and I would recommend that any serious game looking to get published should offer these types of features as options, and not
+as requirements to enjoy the main aspects of the game. That said, voice technology, and even interfacing with your phone
+can be seen as expanding accessibility if done correctly.
 
-Finally, I was able to connect with the following:
-
-```
-websocat wss://robotdreams.deepgram.com:443/game
-```
-
-Things I understand enough:
-* The `PROXY_URL` needs to be `0.0.0.0`, not `127.0.0.1` or `localhost` inside the docker container.
-
-Things I don't understand well:
-* Why did I need to specify `443` in the websockets URL?
-* Why didn't I need to provide my Rust server `CERT_PEM` or `KEY_PEM`?
-* What all is going on with the `nginx` configuration?
-* I had to remove the `CMD` block from my `Dockerfile` - why was it populating a command with `''`? (Maybe this makes sense actually.)
+Besides these thoughts, I don't have a dramatic take away from this series other than "hey this is pretty cool!" and maybe
+that's just fine - games are sometimes meant to just "be neat."
