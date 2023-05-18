@@ -10,7 +10,7 @@ The code for the backend server can be found on the `robot-dreams` branch
 of the `game-twilio-deepgram-distributor` repository [here](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/robot-dreams),
 and the Godot game which is a client to this server can be found [here](https://github.com/nikolawhallon/RobotDreams).
 
-_INCLUDE THE ROBOT DREAMS ICON_
+![Robot Dreams icon](README_assets/robot_dreams_itch_icon.png)
 
 ## The Game Jam at a High Level
 
