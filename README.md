@@ -44,7 +44,7 @@ The only way to truly wake up - as a human - is to find a payphone in Level 2, w
 call a phone number and tell the AI on the other end a secret password - if you do this with your
 IRL phone, you skip ahead to the "good" ending.
 
-![Robot Dreams screenshot showing payphone](README_assets/robot_dreams_screenshot_1.png)
+![Robot Dreams screenshot showing payphone](README_assets/robot_dreams_screenshot_2.png)
 
 A bit of a mini, meta game, the actual phonecall has very little interaction involved, but even still
 it adds a very cool sense of delight when your real-world action causes immediate in-game consequences!
