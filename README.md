@@ -38,13 +38,13 @@ against the backdrop of a cityscape. In order to wake up, you, the player, must 
 get the robot to jump from a great height. Each time you do, you wake up in another level - another dream.
 After 3 levels, you wake up - but as a robot - implying you are in an infinite cycle of dreams!
 
-_INCLUDE A GAMEPLAY SCREENSHOT_
+![Robot Dreams screenshot](README_assets/robot_dreams_screenshot_1.png)
 
 The only way to truly wake up - as a human - is to find a payphone in Level 2, which instructs you to
 call a phone number and tell the AI on the other end a secret password - if you do this with your
 IRL phone, you skip ahead to the "good" ending.
 
-_INCLUDE A GAMEPLAY SCREENSHOT_
+![Robot Dreams screenshot showing payphone](README_assets/robot_dreams_screenshot_1.png)
 
 A bit of a mini, meta game, the actual phonecall has very little interaction involved, but even still
 it adds a very cool sense of delight when your real-world action causes immediate in-game consequences!
