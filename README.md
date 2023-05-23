@@ -27,7 +27,7 @@ You will need the following:
 First, clone the repository containing the server code:
 
 ```
-git clone git@github.com:nikolawhallon/game-twilio-deepgram-distributor.git
+git clone git@github.com:deepgram-devs/game-twilio-deepgram-distributor.git
 ```
 
 Next, checkout the `stt` branch - this is the branch containing the code for "Part 1" in the "Calling Your Video Game With Your Phone" series:
@@ -82,7 +82,7 @@ After that, you should start seeing Deepgram ASR responses stream into your webs
 A simple Godot game has been prepared for you to try this out in a game/game engine. Clone the following repository:
 
 ```
-git@github.com:nikolawhallon/GodotPhonecall.git
+git@github.com:deepgram-devs/GodotPhonecall.git
 ```
 
 And checkout the `stt` branch:
@@ -107,7 +107,7 @@ and the `tungstenite` library for handling outgoing websocket connections. The s
 If you haven't already from going over a previous section, checkout the repository and the `stt` branch:
 
 ```
-git clone git@github.com:nikolawhallon/game-twilio-deepgram-distributor.git
+git clone git@github.com:deepgram-devs/game-twilio-deepgram-distributor.git
 cd game-twilio-deepgram-distributor
 git checkout stt
 ```
@@ -295,7 +295,7 @@ to perform some voice control operations, but for which your gaming device does 
 
 ## Next Steps
 
-In the [next parts of this tutorial series](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/tts),
+In the [next parts of this tutorial series](https://github.com/deepgram-devs/game-twilio-deepgram-distributor/tree/tts),
 we will expand on this server to allow for
 interactions - imagine calling a character in a game with your phone and having an actual conversation
 which impacts what is going on in the game world. Imagine if the phonecalls from Pokémon Silver/Gold/Crystal
@@ -306,8 +306,8 @@ for additional health or a stat boost. The possibilities are weird, but limitles
 
 ## Further Reading
 
-* [Calling Your Video Game With Your Phone: Part 2](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/tts)
-* [Calling Your Video Game With Your Phone: Part 3](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/robot-dreams)
+* [Calling Your Video Game With Your Phone: Part 2](https://github.com/deepgram-devs/game-twilio-deepgram-distributor/tree/tts)
+* [Calling Your Video Game With Your Phone: Part 3](https://github.com/deepgram-devs/game-twilio-deepgram-distributor/tree/robot-dreams)
 * [Deepgram-Twilio streaming in Python](https://blog.deepgram.com/deepgram-twilio-streaming/)
 * [Deepgram-Twilio streaming in Rust](https://blog.deepgram.com/deepgram-twilio-streaming-rust/)
 * [Deepgram streaming in Godot](https://blog.deepgram.com/deepgram-godot-tutorial/)
