@@ -7,7 +7,7 @@ from "Part 2" to offer a unique gameplay twist! That game is
 made for [the Godot Wildjam #55](https://itch.io/jam/godot-wild-jam-55).
 
 The code for the backend server can be found on the `robot-dreams` branch
-of the `game-twilio-deepgram-distributor` repository [here](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/robot-dreams),
+of the `game-twilio-deepgram-distributor` repository [here](https://github.com/deepgram-devs/game-twilio-deepgram-distributor/tree/robot-dreams),
 and the Godot game which is a client to this server can be found [here](https://github.com/nikolawhallon/RobotDreams).
 
 ![Robot Dreams icon](README_assets/robot_dreams_itch_icon.png)
@@ -52,7 +52,7 @@ it adds a very cool sense of delight when your real-world action causes immediat
 ## Some Technical Details
 
 The technical changes with respect to the server presented in "Part 2" of this series are very
-minor and can be reviewed [here](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/pull/4).
+minor and can be reviewed [here](https://github.com/deepgram-devs/game-twilio-deepgram-distributor/pull/4).
 The main change is the ability to specify a config file via the command line using `--config=some_json_file`.
 This config file will enumerate all game codes that can be used to patch phone calls into game session.
 The config file used for the deployed version of Robot Dreams is abbreviated below:
@@ -108,8 +108,8 @@ that's just fine - games are sometimes meant to just "be neat."
 
 ## Further Reading
 
-* [Calling Your Video Game With Your Phone: Part 1](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/stt)
-* [Calling Your Video Game With Your Phone: Part 2](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/tts)
+* [Calling Your Video Game With Your Phone: Part 1](https://github.com/deepgram-devs/game-twilio-deepgram-distributor/tree/stt)
+* [Calling Your Video Game With Your Phone: Part 2](https://github.com/deepgram-devs/game-twilio-deepgram-distributor/tree/tts)
 * [Deepgram-Twilio streaming in Python](https://blog.deepgram.com/deepgram-twilio-streaming/)
 * [Deepgram-Twilio streaming in Rust](https://blog.deepgram.com/deepgram-twilio-streaming-rust/)
 * [Deepgram streaming in Godot](https://blog.deepgram.com/deepgram-godot-tutorial/)
