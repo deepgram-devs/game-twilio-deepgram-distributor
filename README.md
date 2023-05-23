@@ -105,3 +105,11 @@ can be seen as expanding accessibility if done correctly.
 
 Besides these thoughts, I don't have a dramatic take away from this series other than "hey this is pretty cool!" and maybe
 that's just fine - games are sometimes meant to just "be neat."
+
+## Further Reading
+
+* [Calling Your Video Game With Your Phone: Part 1](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/stt)
+* [Calling Your Video Game With Your Phone: Part 2](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/tts)
+* [Deepgram-Twilio streaming in Python](https://blog.deepgram.com/deepgram-twilio-streaming/)
+* [Deepgram-Twilio streaming in Rust](https://blog.deepgram.com/deepgram-twilio-streaming-rust/)
+* [Deepgram streaming in Godot](https://blog.deepgram.com/deepgram-godot-tutorial/)
