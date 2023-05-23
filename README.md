@@ -23,14 +23,14 @@ You will need the following:
 * A Twilio account with a Twilio number (the free tier will work).
 * A Deepgram API Key - [get an API Key here](https://console.deepgram.com/signup?jump=keys).
 * An AWS account with an AWS access key and secret access key with access to [Amazon Polly](https://aws.amazon.com/polly/).
-* To go through [Calling Your Video Game With Your Phone: Part 1](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/stt).
+* To go through [Calling Your Video Game With Your Phone: Part 1](https://github.com/deepgram-devs/game-twilio-deepgram-distributor/tree/stt).
 
 ## Spinning Up the Server
 
 First, clone the repository containing the server code:
 
 ```
-git clone git@github.com:nikolawhallon/game-twilio-deepgram-distributor.git
+git clone git@github.com:deepgram-devs/game-twilio-deepgram-distributor.git
 ```
 
 Next, checkout the `tts` branch - this is the branch containing the code for "Part 2" in the "Calling Your Video Game With Your Phone" series:
@@ -85,7 +85,7 @@ and send the audio to Twilio and you should hear your phone saying that text to 
 A simple Godot game has been prepared for you to try this out in a game/game engine. Clone the following repository:
 
 ```
-git@github.com:nikolawhallon/GodotPhonecall.git
+git@github.com:deepgram-devs/GodotPhonecall.git
 ```
 
 And checkout the `tts` branch:
@@ -295,8 +295,8 @@ more in some more fully-fleshed out, showcase game demos!
 
 ## Further Reading
 
-* [Calling Your Video Game With Your Phone: Part 1](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/stt)
-* [Calling Your Video Game With Your Phone: Part 3](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/robot-dreams)
+* [Calling Your Video Game With Your Phone: Part 1](https://github.com/deepgram-devs/game-twilio-deepgram-distributor/tree/stt)
+* [Calling Your Video Game With Your Phone: Part 3](https://github.com/deepgram-devs/game-twilio-deepgram-distributor/tree/robot-dreams)
 * [Deepgram-Twilio streaming in Python](https://blog.deepgram.com/deepgram-twilio-streaming/)
 * [Deepgram-Twilio streaming in Rust](https://blog.deepgram.com/deepgram-twilio-streaming-rust/)
 * [Deepgram streaming in Godot](https://blog.deepgram.com/deepgram-godot-tutorial/)
