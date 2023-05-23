@@ -19,8 +19,8 @@ Here is a diagram of the system we will be building (the parts which are greyed 
 ## Pre-requisites
 
 You will need the following:
-* a Deepgram API Key
-* a Twilio phone number
+* A Twilio account with a Twilio number (the free tier will work).
+* A Deepgram API Key - [get an API Key here](https://console.deepgram.com/signup?jump=keys).
 
 ## Spinning Up the Server
 
@@ -293,10 +293,21 @@ At this point, there are already several cool applications that can be built, li
 to perform some voice control operations, but for which your gaming device does not have a microphone
 (plus, having to use your phone, while potentially cumbersome, is really fun, bizarre, and meta).
 
-However, in the next parts of this tutorial series, we will expand on this server to allow for
+## Next Steps
+
+In the [next parts of this tutorial series](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/tts),
+we will expand on this server to allow for
 interactions - imagine calling a character in a game with your phone and having an actual conversation
 which impacts what is going on in the game world. Imagine if the phonecalls from Pokémon Silver/Gold/Crystal
 where trainers are challenging you to a rematch used your real physical phone, or a dating sim where
 you can continue carrying out a conversation via phone even after you have logged off of the game,
 or a game where you can call a number to order a pizza which your character then receives in-game
 for additional health or a stat boost. The possibilities are weird, but limitless!
+
+## Further Reading
+
+* [Calling Your Video Game With Your Phone: Part 2](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/tts)
+* [Calling Your Video Game With Your Phone: Part 3](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/robot-dreams)
+* [Deepgram-Twilio streaming in Python](https://blog.deepgram.com/deepgram-twilio-streaming/)
+* [Deepgram-Twilio streaming in Rust](https://blog.deepgram.com/deepgram-twilio-streaming-rust/)
+* [Deepgram streaming in Godot](https://blog.deepgram.com/deepgram-godot-tutorial/)
