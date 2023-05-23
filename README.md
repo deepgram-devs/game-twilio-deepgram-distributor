@@ -20,9 +20,10 @@ Here is a diagram of the system we will be building - note the parts which are n
 ## Pre-requisites
 
 You will need the following:
-* a Deepgram API Key
-* a Twilio phone number
-* an AWS account with an AWS access key and secret access key with access to Amazon Polly
+* A Twilio account with a Twilio number (the free tier will work).
+* A Deepgram API Key - [get an API Key here](https://console.deepgram.com/signup?jump=keys).
+* An AWS account with an AWS access key and secret access key with access to [Amazon Polly](https://aws.amazon.com/polly/).
+* To go through [Calling Your Video Game With Your Phone: Part 1](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/stt).
 
 ## Spinning Up the Server
 
@@ -291,3 +292,11 @@ be to integrate the STT and TTS enabled by this server with a chatbot to breathe
 an in-game personal assistant (imagine a Navi- or Pokédex-esque assistant you can call to ask about in-game
 information, like a quick lookup of enemy stats or move sets!). "Part 3" of this series will explore these ideas
 more in some more fully-fleshed out, showcase game demos!
+
+## Further Reading
+
+* [Calling Your Video Game With Your Phone: Part 1](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/stt)
+* [Calling Your Video Game With Your Phone: Part 3](https://github.com/nikolawhallon/game-twilio-deepgram-distributor/tree/robot-dreams)
+* [Deepgram-Twilio streaming in Python](https://blog.deepgram.com/deepgram-twilio-streaming/)
+* [Deepgram-Twilio streaming in Rust](https://blog.deepgram.com/deepgram-twilio-streaming-rust/)
+* [Deepgram streaming in Godot](https://blog.deepgram.com/deepgram-godot-tutorial/)
